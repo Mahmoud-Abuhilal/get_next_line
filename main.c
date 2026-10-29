@@ -6,12 +6,12 @@
 /*   By: mabuhila <mabuhila@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/26 11:43:39 by mabuhila          #+#    #+#             */
-/*   Updated: 2026/10/26 11:56:37 by mabuhila         ###   ########.fr       */
+/*   Updated: 2026/10/29 16:35:38 by mabuhila         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <fcntl.h>
 #include "get_next_line.h"
+#include <fcntl.h>
 #include <stdio.h>
 
 int	main(void)
@@ -20,10 +20,18 @@ int	main(void)
 	char	*line;
 
 	fd = open("test.txt", O_RDONLY);
-	line = get_next_line(fd);
-	while (line)
+	if (fd < 0)
 	{
-		printf("%s 1", line);
+		perror("open failed");
+		return (1);
+	}
+	line = get_next_line(fd);
+	while (line != NULL)
+	{
+		printf("%s", line);
+		free(line);
 		line = get_next_line(fd);
 	}
+	close(fd);
+	return (0);
 }

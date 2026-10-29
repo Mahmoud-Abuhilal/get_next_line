@@ -6,7 +6,7 @@
 /*   By: mabuhila <mabuhila@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/26 11:18:05 by mabuhila          #+#    #+#             */
-/*   Updated: 2026/10/28 17:38:30 by mabuhila         ###   ########.fr       */
+/*   Updated: 2026/10/29 18:00:17 by mabuhila         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,28 +18,51 @@ char	*freebuff(char *buffer)
 	return (NULL);
 }
 
-char	*extract_line(char *remainder)
+char	*update_remainder(char *remainder)
 {
-	char	*line;
+	char	*new_remainder;
 	int		i;
+	int		j;
 
-	if (!remainder || !remainder[0])
+	if (!remainder)
 		return (NULL);
 	i = 0;
 	while (remainder[i] && remainder[i] != '\n')
 		i++;
-	line = malloc(i + (remainder[i] == '\n') + 1);
+	if (!remainder[i])
+		return (freebuff(remainder));
+	new_remainder = malloc(ft_strlen(remainder + i + 1) + 1);
+	if (!new_remainder)
+	{
+		free(remainder);
+		return (NULL);
+	}
+	i++;
+	j = 0;
+	while (remainder[i])
+		new_remainder[j++] = remainder[i++];
+	new_remainder[j] = '\0';
+	free(remainder);
+	return (new_remainder);
+}
+
+char	*extract_line(char *remainder)
+{
+	char	*line;
+	size_t	len;
+
+	if (!remainder || !remainder[0])
+		return (NULL);
+	len = 0;
+	while (remainder[len] && remainder[len] != '\n')
+		len++;
+	if (remainder[len] == '\n')
+		len++;
+	line = malloc(len + 1);
 	if (!line)
 		return (NULL);
-	i = 0;
-	while (remainder[i] != '\n' && remainder[i])
-	{
-		line[i] = remainder[i];
-		i++;
-	}
-	if (remainder[i] == '\n')
-		line[i++] = '\n';
-	line[i] = '\0';
+	ft_memcpy(line, remainder, len);
+	line[len] = '\0';
 	return (line);
 }
 
@@ -52,7 +75,7 @@ char	*read_remainder(int fd, char *remainder)
 	if (!buffer)
 		return (freebuff(remainder));
 	rbytes = 1;
-	while (rbytes > 0 && (!ft_strchr(remainder, '\n')))
+	while (rbytes > 0)
 	{
 		rbytes = read(fd, buffer, BUFFER_SIZE);
 		if (rbytes == -1)
@@ -65,6 +88,8 @@ char	*read_remainder(int fd, char *remainder)
 		remainder = ft_strjoin_free(remainder, buffer);
 		if (!remainder)
 			return (freebuff(buffer));
+		if (ft_strchr(buffer, '\n'))
+			break ;
 	}
 	free(buffer);
 	return (remainder);
@@ -81,4 +106,12 @@ char	*get_next_line(int fd)
 	if (!remainder)
 		return (NULL);
 	line = extract_line(remainder);
+	if (!line)
+	{
+		free(remainder);
+		remainder = NULL;
+		return (NULL);
+	}
+	remainder = update_remainder(remainder);
+	return (line);
 }
