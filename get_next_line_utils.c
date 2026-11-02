@@ -6,7 +6,7 @@
 /*   By: mabuhila <mabuhila@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/28 15:12:30 by mabuhila          #+#    #+#             */
-/*   Updated: 2026/10/29 17:49:58 by mabuhila         ###   ########.fr       */
+/*   Updated: 2026/11/02 15:11:09 by mabuhila         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,8 @@ void	*ft_memcpy(void *dest, const void *src, size_t n)
 	unsigned char		*d;
 	const unsigned char	*s;
 
+	if (!src && !dest)
+		return (NULL);
 	i = 0;
 	d = (unsigned char *) dest;
 	s = (const unsigned char *) src;

@@ -1,0 +1,117 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   get_next_line_bonus.c                              :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: mabuhila <mabuhila@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/11/02 14:52:31 by mabuhila          #+#    #+#             */
+/*   Updated: 2026/11/02 15:11:04 by mabuhila         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "get_next_line_bonus.h"
+
+char	*freebuff(char *buffer)
+{
+	free(buffer);
+	return (NULL);
+}
+
+char	*update_remainder(char *remainder)
+{
+	char	*new_remainder;
+	int		i;
+	int		j;
+
+	if (!remainder)
+		return (NULL);
+	i = 0;
+	while (remainder[i] && remainder[i] != '\n')
+		i++;
+	if (!remainder[i])
+		return (freebuff(remainder));
+	new_remainder = malloc(ft_strlen(remainder + i + 1) + 1);
+	if (!new_remainder)
+	{
+		free(remainder);
+		return (NULL);
+	}
+	i++;
+	j = 0;
+	while (remainder[i])
+		new_remainder[j++] = remainder[i++];
+	new_remainder[j] = '\0';
+	free(remainder);
+	return (new_remainder);
+}
+
+char	*extract_line(char *remainder)
+{
+	char	*line;
+	size_t	len;
+
+	if (!remainder || !remainder[0])
+		return (NULL);
+	len = 0;
+	while (remainder[len] && remainder[len] != '\n')
+		len++;
+	if (remainder[len] == '\n')
+		len++;
+	line = malloc(len + 1);
+	if (!line)
+		return (NULL);
+	ft_memcpy(line, remainder, len);
+	line[len] = '\0';
+	return (line);
+}
+
+char	*read_remainder(int fd, char *remainder)
+{
+	char	*buffer;
+	int		rbytes;
+
+	buffer = malloc(BUFFER_SIZE + 1);
+	if (!buffer)
+		return (freebuff(remainder));
+	rbytes = 1;
+	while (rbytes > 0)
+	{
+		rbytes = read(fd, buffer, BUFFER_SIZE);
+		if (rbytes == -1)
+		{
+			free(remainder);
+			free(buffer);
+			return (NULL);
+		}
+		buffer[rbytes] = '\0';
+		remainder = ft_strjoin_free(remainder, buffer);
+		if (!remainder)
+			return (freebuff(buffer));
+		if (ft_strchr(buffer, '\n'))
+			break ;
+	}
+	free(buffer);
+	return (remainder);
+}
+
+char	*get_next_line(int fd)
+{
+	static char	*remainder[FOPEN_MAX];
+	char		*line;
+
+	if (fd < 0 || fd >= FOPEN_MAX || BUFFER_SIZE <= 0)
+		return (NULL);
+	remainder[fd] = read_remainder(fd, remainder[fd]);
+	if (!remainder[fd])
+		return (NULL);
+	line = extract_line(remainder[fd]);
+	if (!line)
+	{
+		free(remainder[fd]);
+		remainder[fd] = NULL;
+		return (NULL);
+	}
+	remainder[fd] = update_remainder(remainder[fd]);
+	return (line);
+}
